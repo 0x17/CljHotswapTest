@@ -26,6 +26,7 @@
                 (println "Reload exception:" (.getMessage e))))
             (reset! last-reload (.lastModified code-file)))
           (try
+            (reset! gstate (gmain/update-game @gstate))
             (gmain/render-game @gstate)
             (catch Exception e
               (when did-modify?

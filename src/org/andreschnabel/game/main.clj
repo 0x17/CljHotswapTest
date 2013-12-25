@@ -1,5 +1,7 @@
 (ns org.andreschnabel.game.main
-  (:require [org.andreschnabel.hotswap.globals :as globals])
+  (:require [org.andreschnabel.hotswap.globals :as globals]
+            [org.andreschnabel.hotswap.utils :as utils]
+            [org.andreschnabel.game.stars :as stars])
   (:import (com.badlogic.gdx Gdx Input Input$Keys Files)
            (com.badlogic.gdx.graphics.glutils ShapeRenderer ShapeRenderer$ShapeType)
            (com.badlogic.gdx.graphics GL10 Color Texture)
@@ -7,12 +9,16 @@
            (com.badlogic.gdx.graphics.g2d SpriteBatch)))
 
 (defn init-game []
-  {:sr  (ShapeRenderer.)
-   :pos (Vector2. 10 10)
-   :sb  (SpriteBatch.)
-   :tex (Texture. (.internal Gdx/files "../../../../sprite1.png"))})
+  {:sr    (ShapeRenderer.)
+   :pos   (Vector2. 10 10)
+   :sb    (SpriteBatch.)
+   :tex   (Texture. (.internal Gdx/files "../../../../sprite1.png"))
+   :stars (stars/init 128)})
 
-(defn render-game [{:keys [sr pos sb tex]}]
+(defn update-game [state]
+  (->> state (stars/update)))
+
+(defn render-game [{:keys [sr pos sb tex stars]}]
   (letfn [(key-pressed? [key]
                         (.isKeyPressed Gdx/input key))
 
@@ -51,11 +57,21 @@
                        (.setColor sr Color/YELLOW)
                        (.rect sr (.x pos) (.y pos) 100 100))
 
+          (draw-stars []
+                      (.setColor sr Color/WHITE)
+                      (.begin sr ShapeRenderer$ShapeType/Filled)
+                      (doseq [{[x y] :pos} stars]
+                        (.circle sr x y 10))
+                      (.end sr))
+
           (draw-shapes []
                        (.begin sr ShapeRenderer$ShapeType/Line)
                        (draw-circles)
                        (draw-square)
-                       (.end sr))
+                       (.end sr)
+
+                       (draw-stars))
+
           (draw-img []
                     (.begin sb)
                     (.draw sb tex (.x pos) (.y pos))
