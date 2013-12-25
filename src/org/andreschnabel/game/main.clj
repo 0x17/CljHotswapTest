@@ -3,18 +3,14 @@
            (com.badlogic.gdx.graphics.glutils ShapeRenderer ShapeRenderer$ShapeType)
            (com.badlogic.gdx.graphics GL10 Color Texture)
            (com.badlogic.gdx.math Vector2)
-           (com.badlogic.gdx.graphics.g2d SpriteBatch)))
+           (com.badlogic.gdx.graphics.g2d SpriteBatch)
+           (com.badlogic.gdx.utils Disposable)))
 
 (defn init-game []
   {:sr  (ShapeRenderer.)
    :pos (Vector2. 10 10)
    :sb  (SpriteBatch.)
    :tex (Texture. (.internal Gdx/files "../../../../sprite1.png"))})
-
-(defn quit-game [{:keys [sr sb tex]}]
-  (.dispose sr)
-  (.dispose sb)
-  (.dispose tex))
 
 (defn render-game [{:keys [pos sr sb tex]}]
   (letfn [(key-pressed? [key]

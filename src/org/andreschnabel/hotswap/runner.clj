@@ -2,7 +2,8 @@
   (:require [org.andreschnabel.game.main :as gmain])
   (:import (com.badlogic.gdx ApplicationListener Gdx Input Input$Keys)
            (com.badlogic.gdx.backends.lwjgl LwjglApplication)
-           (java.io File)))
+           (java.io File)
+           (com.badlogic.gdx.utils Disposable)))
 
 (def code-filename "../game/main.clj")
 
@@ -35,6 +36,8 @@
       (pause [])
       (resume [])
       (dispose []
-        (gmain/quit-game @gstate)))))
+        (doseq [obj (vals @gstate)]
+          (when (instance? Disposable obj)
+            (.dispose obj)))))))
 
 (LwjglApplication. my-listener "Test" 640 480 false)
