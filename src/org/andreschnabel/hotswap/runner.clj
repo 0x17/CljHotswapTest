@@ -1,18 +1,17 @@
 (ns org.andreschnabel.hotswap.runner
-  (:require [org.andreschnabel.game.main :as gmain])
+  (:require [org.andreschnabel.game.main :as gmain]
+            [org.andreschnabel.hotswap.globals :as globals])
   (:import (com.badlogic.gdx ApplicationListener Gdx Input Input$Keys)
            (com.badlogic.gdx.backends.lwjgl LwjglApplication)
            (java.io File)
            (com.badlogic.gdx.utils Disposable)))
 
-(def code-filename "../game/main.clj")
-
-(defn modified-code? [code-file last-reload]
+(defn- modified-code? [code-file last-reload]
   (> (.lastModified code-file) last-reload))
 
 (def my-listener
   (let [last-reload (atom 0)
-        code-file (File. code-filename)
+        code-file (File. globals/code-filename)
         gstate (atom nil)]
     (proxy [ApplicationListener] []
       (create []
@@ -22,7 +21,7 @@
         (let [did-modify? (modified-code? code-file @last-reload)]
           (when did-modify?
             (try
-              (load-file code-filename)
+              (load-file globals/code-filename)
               (catch Exception e
                 (println "Reload exception:" (.getMessage e))))
             (reset! last-reload (.lastModified code-file)))
@@ -40,4 +39,4 @@
           (when (instance? Disposable obj)
             (.dispose obj)))))))
 
-(LwjglApplication. my-listener "Test" 640 480 false)
+(LwjglApplication. my-listener globals/caption globals/scr-w globals/scr-h false)

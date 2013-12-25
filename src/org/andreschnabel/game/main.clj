@@ -1,10 +1,10 @@
 (ns org.andreschnabel.game.main
+  (:require [org.andreschnabel.hotswap.globals :as globals])
   (:import (com.badlogic.gdx Gdx Input Input$Keys Files)
            (com.badlogic.gdx.graphics.glutils ShapeRenderer ShapeRenderer$ShapeType)
            (com.badlogic.gdx.graphics GL10 Color Texture)
            (com.badlogic.gdx.math Vector2)
-           (com.badlogic.gdx.graphics.g2d SpriteBatch)
-           (com.badlogic.gdx.utils Disposable)))
+           (com.badlogic.gdx.graphics.g2d SpriteBatch)))
 
 (defn init-game []
   {:sr  (ShapeRenderer.)
@@ -12,7 +12,7 @@
    :sb  (SpriteBatch.)
    :tex (Texture. (.internal Gdx/files "../../../../sprite1.png"))})
 
-(defn render-game [{:keys [pos sr sb tex]}]
+(defn render-game [{:keys [sr pos sb tex]}]
   (letfn [(key-pressed? [key]
                         (.isKeyPressed Gdx/input key))
 
@@ -43,8 +43,8 @@
 
           (draw-circles []
                         (.setColor sr Color/RED)
-                        (doseq [x (range 0 640 100)]
-                          (doseq [y (range 0 480 100)]
+                        (doseq [x (range 0 globals/scr-w 100)]
+                          (doseq [y (range 0 globals/scr-h 100)]
                             (.circle sr x y 100))))
 
           (draw-square []
@@ -60,8 +60,8 @@
                     (.begin sb)
                     (.draw sb tex (.x pos) (.y pos))
                     (.end sb))]
+
     (process-input)
     (clear-scr)
     (draw-shapes)
     (draw-img)))
-
