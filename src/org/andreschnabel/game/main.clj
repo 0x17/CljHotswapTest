@@ -3,8 +3,9 @@
             [org.andreschnabel.hotswap.utils :as utils]
             [org.andreschnabel.game.stars :as stars])
   (:import (com.badlogic.gdx Gdx Input Input$Keys Files)
-           (com.badlogic.gdx.graphics.glutils ShapeRenderer ShapeRenderer$ShapeType)
-           (com.badlogic.gdx.graphics GL10 Color Texture)
+           (com.badlogic.gdx.graphics.glutils ShapeRenderer ShapeRenderer$ShapeType ImmediateModeRenderer
+                                              ImmediateModeRenderer10)
+           (com.badlogic.gdx.graphics GL10 Color Texture OrthographicCamera PerspectiveCamera)
            (com.badlogic.gdx.graphics.g2d SpriteBatch)))
 
 (defn init-game []
@@ -12,7 +13,11 @@
    :pos   [10 10]
    :sb    (SpriteBatch.)
    :tex   (Texture. (.internal Gdx/files "../../../../sprite1.png"))
-   :stars (stars/init 128)})
+   :stars (stars/init 128)
+   :persp-cam (PerspectiveCamera. 60 globals/scr-w globals/scr-h)
+   :ortho-cam (OrthographicCamera.)
+   :imr (ImmediateModeRenderer10.)
+   :angle 0.0})
 
 (defn move [dx dy {:keys [pos] :as state}]
   (utils/coords pos (assoc state :pos [(+ x dx) (+ y dy)])))
@@ -32,10 +37,13 @@
       (.exit Gdx/app))
     (reduce process-key state (keys key-action-map))))
 
-(defn update-game [state]
-  (->> state (stars/update) (process-input)))
+(defn update-angle [{:keys [angle] :as state}]
+  (assoc state :angle (+ angle 5)))
 
-(defn render-game [{:keys [sr pos sb tex stars]}]
+(defn update-game [state]
+  (->> state (stars/update) (process-input) (update-angle)))
+
+(defn render-game [{:keys [sr pos sb tex stars ortho-cam persp-cam imr angle]}]
   (letfn [(clear-scr []
                      (.glClearColor Gdx/gl 0 0 0 1)
                      (.glClear Gdx/gl GL10/GL_COLOR_BUFFER_BIT))
@@ -67,8 +75,34 @@
           (draw-img []
                     (.begin sb)
                     (utils/coords (map float pos) (.draw sb tex x y))
-                    (.end sb))]
+                    (.end sb))
+
+          (draw-triangle-vertices [[x y z] [w h]]
+                     (.begin imr GL10/GL_TRIANGLES)
+
+                     (.color imr 1 1 0 1)
+                     (.vertex imr x y z)
+
+                     (.color imr 0 1 0 1)
+                     (.vertex imr (+ x w) y z)
+
+                     (.color imr 0 0 1 1)
+                     (.vertex imr (+ x w) (+ y h) z)
+
+                     (.end imr))
+
+          (draw-triangle []
+                         (.glPushMatrix Gdx/gl10)
+                         (.glTranslatef Gdx/gl10 0 0 -10)
+                         (.glRotatef Gdx/gl10 angle 0 1 0)
+                         (draw-triangle-vertices [0 0 0] [7 4])
+                         (.glPopMatrix Gdx/gl10))]
 
     (clear-scr)
+
+    (.apply persp-cam Gdx/gl10)
+    (draw-triangle)
+
+    (.apply ortho-cam Gdx/gl10)
     (draw-shapes)
     (draw-img)))
