@@ -15,8 +15,7 @@
    :stars (stars/init 128)})
 
 (defn move [dx dy {:keys [pos] :as state}]
-  (let [[x y] pos]
-    (assoc state :pos [(+ x dx) (+ y dy)])))
+  (utils/coords pos (assoc state :pos [(+ x dx) (+ y dy)])))
 
 (def key-action-map {Input$Keys/LEFT  (partial move -10 0)
                      Input$Keys/RIGHT (partial move 10 0)
@@ -49,8 +48,7 @@
 
           (draw-square []
                        (.setColor sr Color/YELLOW)
-                       (let [[x y] pos]
-                         (.rect sr x y 100 100)))
+                       (utils/coords pos (.rect sr x y 64 64)))
 
           (draw-stars []
                       (.setColor sr Color/WHITE)
@@ -68,10 +66,9 @@
 
           (draw-img []
                     (.begin sb)
-                    (let [[x y] (map float pos)]
-                      (.draw sb tex x y))
+                    (utils/coords (map float pos) (.draw sb tex x y))
                     (.end sb))]
 
     (clear-scr)
-    ;(draw-shapes)
+    (draw-shapes)
     (draw-img)))

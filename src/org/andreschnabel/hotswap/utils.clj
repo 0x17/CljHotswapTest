@@ -10,4 +10,17 @@
    (rand-int globals/scr-h)])
 
 (defn out-of-scr? [[x y]]
-  (or (< x 0) (< y 0) (> x globals/scr-w) (> y globals/scr-h)))
+  (not (and (< 0 x globals/scr-w)
+            (< 0 y globals/scr-h))))
+
+(defmacro assign-from-map [obj m]
+  `(do ~@(map (fn [k]
+                (let [v (get m k)]
+                  `(set! (~k ~obj) ~v)))
+              (keys m))))
+
+(defmacro coords [v & body]
+  `(let [[~'x ~'y] ~v] ~@body))
+
+; (defmacro destr-map [m]
+;  `{:keys [~@(map #(symbol (name %)) (keys m))] :as ~'m})
