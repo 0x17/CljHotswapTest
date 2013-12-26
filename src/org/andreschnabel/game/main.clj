@@ -5,45 +5,39 @@
   (:import (com.badlogic.gdx Gdx Input Input$Keys Files)
            (com.badlogic.gdx.graphics.glutils ShapeRenderer ShapeRenderer$ShapeType)
            (com.badlogic.gdx.graphics GL10 Color Texture)
-           (com.badlogic.gdx.math Vector2)
            (com.badlogic.gdx.graphics.g2d SpriteBatch)))
 
 (defn init-game []
   {:sr    (ShapeRenderer.)
-   :pos   (Vector2. 10 10)
+   :pos   [10 10]
    :sb    (SpriteBatch.)
    :tex   (Texture. (.internal Gdx/files "../../../../sprite1.png"))
    :stars (stars/init 128)})
 
+(defn move [dx dy {:keys [pos] :as state}]
+  (let [[x y] pos]
+    (assoc state :pos [(+ x dx) (+ y dy)])))
+
+(def key-action-map {Input$Keys/LEFT  (partial move -10 0)
+                     Input$Keys/RIGHT (partial move 10 0)
+                     Input$Keys/UP    (partial move 0 10)
+                     Input$Keys/DOWN  (partial move 0 -10)})
+
+(defn process-input [state]
+  (letfn [(key-pressed? [key] (.isKeyPressed Gdx/input key))
+          (process-key [acc key]
+                       (if (key-pressed? key)
+                         ((get key-action-map key) acc)
+                         acc))]
+    (when (key-pressed? Input$Keys/ESCAPE)
+      (.exit Gdx/app))
+    (reduce process-key state (keys key-action-map))))
+
 (defn update-game [state]
-  (->> state (stars/update)))
+  (->> state (stars/update) (process-input)))
 
 (defn render-game [{:keys [sr pos sb tex stars]}]
-  (letfn [(key-pressed? [key]
-                        (.isKeyPressed Gdx/input key))
-
-          (add-pos [dx dy]
-                   (set! (.x pos) (+ (.x pos) dx))
-                   (set! (.y pos) (+ (.y pos) dy)))
-
-          (rect-movement []
-                         (when (key-pressed? Input$Keys/LEFT)
-                           (add-pos -10 0))
-                         (when (key-pressed? Input$Keys/RIGHT)
-                           (add-pos 10 0))
-                         (when (key-pressed? Input$Keys/UP)
-                           (add-pos 0 10))
-                         (when (key-pressed? Input$Keys/DOWN)
-                           (add-pos 0 -10)))
-
-          (process-input []
-                         (when (key-pressed? Input$Keys/ESCAPE)
-                           (.exit Gdx/app))
-                         (when (key-pressed? Input$Keys/W)
-                           (println "Pressed W"))
-                         (rect-movement))
-
-          (clear-scr []
+  (letfn [(clear-scr []
                      (.glClearColor Gdx/gl 0 0 0 1)
                      (.glClear Gdx/gl GL10/GL_COLOR_BUFFER_BIT))
 
@@ -55,7 +49,8 @@
 
           (draw-square []
                        (.setColor sr Color/YELLOW)
-                       (.rect sr (.x pos) (.y pos) 100 100))
+                       (let [[x y] pos]
+                         (.rect sr x y 100 100)))
 
           (draw-stars []
                       (.setColor sr Color/WHITE)
@@ -69,15 +64,14 @@
                        (draw-circles)
                        (draw-square)
                        (.end sr)
-
                        (draw-stars))
 
           (draw-img []
                     (.begin sb)
-                    (.draw sb tex (.x pos) (.y pos))
+                    (let [[x y] (map float pos)]
+                      (.draw sb tex x y))
                     (.end sb))]
 
-    (process-input)
     (clear-scr)
-    (draw-shapes)
+    ;(draw-shapes)
     (draw-img)))

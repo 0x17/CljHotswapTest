@@ -2,7 +2,7 @@
   (:require [org.andreschnabel.game.main :as gmain]
             [org.andreschnabel.hotswap.globals :as globals])
   (:import (com.badlogic.gdx ApplicationListener Gdx Input Input$Keys)
-           (com.badlogic.gdx.backends.lwjgl LwjglApplication)
+           (com.badlogic.gdx.backends.lwjgl LwjglApplication LwjglApplicationConfiguration)
            (java.io File)
            (com.badlogic.gdx.utils Disposable)))
 
@@ -40,4 +40,11 @@
           (when (instance? Disposable obj)
             (.dispose obj)))))))
 
-(LwjglApplication. my-listener globals/caption globals/scr-w globals/scr-h false)
+(def cfg (LwjglApplicationConfiguration.))
+(set! (.useGL20 cfg) false)
+(set! (.title cfg) globals/caption)
+(set! (.width cfg) globals/scr-w)
+(set! (.height cfg) globals/scr-h)
+(set! (.vSyncEnabled cfg) true)
+
+(LwjglApplication. my-listener cfg)
