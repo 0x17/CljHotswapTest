@@ -9,15 +9,15 @@
            (com.badlogic.gdx.graphics.g2d SpriteBatch)))
 
 (defn init-game []
-  {:sr    (ShapeRenderer.)
-   :pos   [10 10]
-   :sb    (SpriteBatch.)
-   :tex   (Texture. (.internal Gdx/files "../../../../sprite1.png"))
-   :stars (stars/init 128)
+  {:sr        (ShapeRenderer.)
+   :pos       [10 10]
+   :sb        (SpriteBatch.)
+   :tex       (Texture. (.internal Gdx/files "../../../../sprite1.png"))
+   :stars     (stars/init 128)
    :persp-cam (PerspectiveCamera. 60 globals/scr-w globals/scr-h)
    :ortho-cam (OrthographicCamera.)
-   :imr (ImmediateModeRenderer10.)
-   :angle 0.0})
+   :imr       (ImmediateModeRenderer10.)
+   :angle     0.0})
 
 (defn move [dx dy {:keys [pos] :as state}]
   (utils/coords pos (assoc state :pos [(+ x dx) (+ y dy)])))
@@ -41,7 +41,10 @@
   (assoc state :angle (+ angle 5)))
 
 (defn update-game [state]
-  (->> state (stars/update) (process-input) (update-angle)))
+  (->> state
+       (stars/update)
+       (process-input)
+       (update-angle)))
 
 (defn render-game [{:keys [sr pos sb tex stars ortho-cam persp-cam imr angle]}]
   (letfn [(clear-scr []
@@ -78,18 +81,18 @@
                     (.end sb))
 
           (draw-triangle-vertices [[x y z] [w h]]
-                     (.begin imr GL10/GL_TRIANGLES)
+                                  (.begin imr GL10/GL_TRIANGLES)
 
-                     (.color imr 1 1 0 1)
-                     (.vertex imr x y z)
+                                  (.color imr 1 1 0 1)
+                                  (.vertex imr x y z)
 
-                     (.color imr 0 1 0 1)
-                     (.vertex imr (+ x w) y z)
+                                  (.color imr 0 1 0 1)
+                                  (.vertex imr (+ x w) y z)
 
-                     (.color imr 0 0 1 1)
-                     (.vertex imr (+ x w) (+ y h) z)
+                                  (.color imr 0 0 1 1)
+                                  (.vertex imr (+ x w) (+ y h) z)
 
-                     (.end imr))
+                                  (.end imr))
 
           (draw-triangle []
                          (.glPushMatrix Gdx/gl10)
