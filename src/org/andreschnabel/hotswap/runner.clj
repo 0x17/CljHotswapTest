@@ -28,7 +28,9 @@
 
             (when did-modify?
               (try
-                (doseq [f files] (load-file (.getAbsolutePath f)))
+                (doseq [f files]
+                  (when (> (.lastModified f) @last-reload)
+                    (load-file (.getAbsolutePath f))))
                 (reset! last-reload max-lastmod)
                 (catch Exception e
                   (println "Reload exception:" (.getMessage e)))))
