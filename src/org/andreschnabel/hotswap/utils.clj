@@ -26,3 +26,11 @@
 (defn file-lst [path extension]
   (filter (fn [f] (.endsWith (.getName f) (str "." extension)))
           (.listFiles (File. path))))
+
+(defn limit-rate [f min-delta]
+  (let [last-call (atom 0)]
+    (fn [& params]
+      (let [delta (- (System/currentTimeMillis) @last-call)]
+        (when (> delta min-delta)
+          (reset! last-call (System/currentTimeMillis))
+          (if (nil? params) (f) (f params)))))))

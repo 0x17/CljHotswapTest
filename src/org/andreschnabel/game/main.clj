@@ -17,7 +17,8 @@
    :persp-cam (PerspectiveCamera. 60 globals/scr-w globals/scr-h)
    :ortho-cam (OrthographicCamera.)
    :imr       (ImmediateModeRenderer10.)
-   :angle     0.0})
+   :angle     0.0
+   :bullets   '()})
 
 (defn move [dx dy {:keys [pos] :as state}]
   (utils/coords pos (assoc state :pos [(+ x dx) (+ y dy)])))
@@ -27,12 +28,16 @@
                      Input$Keys/UP    (partial move 0 10)
                      Input$Keys/DOWN  (partial move 0 -10)})
 
+(def say-hello (utils/limit-rate (fn [] (println "Hello")) 2000) )
+
 (defn process-input [state]
   (letfn [(key-pressed? [key] (.isKeyPressed Gdx/input key))
           (process-key [acc key]
                        (if (key-pressed? key)
                          ((get key-action-map key) acc)
                          acc))]
+    (when (key-pressed? Input$Keys/SPACE)
+      (say-hello))
     (when (key-pressed? Input$Keys/ESCAPE)
       (.exit Gdx/app))
     (reduce process-key state (keys key-action-map))))
@@ -40,10 +45,14 @@
 (defn update-angle [{:keys [angle] :as state}]
   (assoc state :angle (+ angle 5)))
 
+;(defn update-bullets [{:keys [bullets] :as state}]
+;  (assoc state :bullets (map)))
+
 (defn update-game [state]
   (->> state
        (stars/update)
        (process-input)
+       ;(update-bullets)
        (update-angle)))
 
 (defn render-game [{:keys [sr pos sb tex stars ortho-cam persp-cam imr angle]}]
