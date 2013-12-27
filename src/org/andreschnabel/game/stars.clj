@@ -7,7 +7,7 @@
 
 (defn update [{:keys [stars] :as state}]
   (letfn [(update-star [{:keys [pos] :as star}]
-                       (let [moved-pos (map + pos [0 -10])
+                       (let [moved-pos (map + pos [0 -5])
                              final-pos (if (utils/out-of-scr? moved-pos)
                                          [(first moved-pos) globals/scr-h] moved-pos)]
                          (assoc star :pos final-pos)))]

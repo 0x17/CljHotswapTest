@@ -7,20 +7,10 @@
            (java.io File)
            (com.badlogic.gdx.utils Disposable)))
 
-(defn- modified-code? [code-file last-reload]
-  (> (.lastModified code-file) last-reload))
-
 (def my-listener
   (let [last-reload (atom 0)
-        code-file (File. globals/code-filename)
         gstate (atom nil)]
-    (letfn [(attempt-reload []
-                            (try
-                              (load-file globals/code-filename)
-                              (catch Exception e
-                                (println "Reload exception:" (.getMessage e))))
-                            (reset! last-reload (.lastModified code-file)))
-            (attempt-render [modified?]
+    (letfn [(attempt-render [modified?]
                             (try
                               (reset! gstate (gmain/update-game @gstate))
                               (gmain/render-game @gstate)
@@ -32,9 +22,19 @@
           (reset! gstate (gmain/init-game)))
         (resize [w h])
         (render []
-          (let [did-modify? (modified-code? code-file @last-reload)]
-            (when did-modify? (attempt-reload))
+          (let [files (utils/file-lst globals/code-path "clj")
+                max-lastmod (->> files (map #(.lastModified %)) (apply max))
+                did-modify? (> max-lastmod @last-reload)]
+
+            (when did-modify?
+              (try
+                (doseq [f files] (load-file (.getAbsolutePath f)))
+                (reset! last-reload max-lastmod)
+                (catch Exception e
+                  (println "Reload exception:" (.getMessage e)))))
+
             (attempt-render did-modify?))
+
           (when (.isKeyPressed Gdx/input Input$Keys/ENTER)
             (reset! gstate (gmain/init-game))))
         (pause [])

@@ -1,6 +1,7 @@
 (ns org.andreschnabel.hotswap.utils
   (:require [org.andreschnabel.hotswap.globals :as globals])
-  (:import (com.badlogic.gdx.math Vector2)))
+  (:import (com.badlogic.gdx.math Vector2)
+           (java.io File)))
 
 (defn vec->gdxvec [[x y]] (Vector2. x y))
 (defn gdxvec->vec [v] [(.x v) (.y v)])
@@ -22,5 +23,6 @@
 (defmacro coords [v & body]
   `(let [[~'x ~'y] ~v] ~@body))
 
-; (defmacro destr-map [m]
-;  `{:keys [~@(map #(symbol (name %)) (keys m))] :as ~'m})
+(defn file-lst [path extension]
+  (filter (fn [f] (.endsWith (.getName f) (str "." extension)))
+          (.listFiles (File. path))))
